@@ -12,7 +12,7 @@ def main():
 	#ser.write(b'a')
 	
 	face_classifier = cv2.CascadeClassifier(
-		'/home/lennedy/software/testes/venv/lib/python3.10/site-packages/cv2/data/haarcascade_frontalface_default.xml'
+		'/home/lennedy/software/testes/venv/lib/python3.10/site-packages/cv2/data/haarcascade_lefteye_2splits.xml' #lembrar de mudar isso quando for pro comp de hellen
 	)
 
 	cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
@@ -25,6 +25,10 @@ def main():
 
 	print("Sucesso! Q pra sair")
 
+	face_presente = False   # Estado: tem ou não tem face na frente da câmera
+
+
+
 	while True:
 		ret, frame = cap.read()
 
@@ -34,13 +38,13 @@ def main():
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 		faces = face_classifier.detectMultiScale(
-			gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40)
+			gray, scaleFactor=1.05, minNeighbors=7, minSize=(80, 80)
 		)
-		
+			
 		#comunicação serial
-		if len(faces) > 0:
-    			ser.write(b"a")   # abre
-    			break
+		#if len(faces) > 0:
+    			#ser.write(b"a")   # abre
+    			#break
 		#else:
     			#ser.write(b"f")   # fecha
 
@@ -54,6 +58,20 @@ def main():
 
 		if cv2.waitKey(1)  == ord('q'):
 			break
+			
+		if len(faces) > 0:
+			if not face_presente:  
+				print("Nova face detectada → enviando comando para abrir catraca.")
+				ser.write(b'a')       # abre
+				face_presente = True      # registra que a face está presente
+				time.sleep(2)				
+			else:
+				pass
+				
+		else:
+			if face_presente:
+        			print("Face saiu → pronto para detectar novamente.")
+			face_presente = False
 
 	#print(f"Detectamos {faces_detec} face(s)")
 	cap.release()
